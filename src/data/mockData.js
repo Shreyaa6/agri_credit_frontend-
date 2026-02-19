@@ -252,14 +252,21 @@ export const riskDistribution = [
 ];
 
 export const farmersList = [
-  { id: 'FRM-001', name: 'Rajesh Kumar', score: 74, risk: 'Low', district: 'Varanasi', loanAmount: 180000, status: 'Active' },
-  { id: 'FRM-002', name: 'Sunita Devi', score: 62, risk: 'Medium', district: 'Allahabad', loanAmount: 95000, status: 'Active' },
-  { id: 'FRM-003', name: 'Mohan Singh', score: 85, risk: 'Low', district: 'Agra', loanAmount: 320000, status: 'Active' },
-  { id: 'FRM-004', name: 'Priya Sharma', score: 45, risk: 'High', district: 'Lucknow', loanAmount: 50000, status: 'Review' },
-  { id: 'FRM-005', name: 'Vikram Yadav', score: 58, risk: 'Medium', district: 'Kanpur', loanAmount: 120000, status: 'Active' },
-  { id: 'FRM-006', name: 'Lakshmi Bai', score: 71, risk: 'Low', district: 'Jhansi', loanAmount: 200000, status: 'Active' },
-  { id: 'FRM-007', name: 'Amit Patel', score: 38, risk: 'High', district: 'Bareilly', loanAmount: 45000, status: 'Flagged' },
-  { id: 'FRM-008', name: 'Geeta Mishra', score: 79, risk: 'Low', district: 'Varanasi', loanAmount: 250000, status: 'Active' },
+  { id: 'FRM-001', name: 'Rajesh Kumar', score: 74, risk: 'Low', district: 'Varanasi', loanAmount: 180000, status: 'Active', landSize: '4.2 Acres', crop: 'Wheat' },
+  { id: 'FRM-002', name: 'Sunita Devi', score: 62, risk: 'Medium', district: 'Allahabad', loanAmount: 95000, status: 'Active', landSize: '2.5 Acres', crop: 'Rice' },
+  { id: 'FRM-003', name: 'Mohan Singh', score: 85, risk: 'Low', district: 'Agra', loanAmount: 320000, status: 'Active', landSize: '12.0 Acres', crop: 'Potatoes' },
+  { id: 'FRM-004', name: 'Priya Sharma', score: 45, risk: 'High', district: 'Lucknow', loanAmount: 50000, status: 'Review', landSize: '1.8 Acres', crop: 'Sugarcane' },
+  { id: 'FRM-005', name: 'Vikram Yadav', score: 58, risk: 'Medium', district: 'Kanpur', loanAmount: 120000, status: 'Active', landSize: '3.1 Acres', crop: 'Pulses' },
+  { id: 'FRM-006', name: 'Lakshmi Bai', score: 71, risk: 'Low', district: 'Jhansi', loanAmount: 200000, status: 'Active', landSize: '5.5 Acres', crop: 'Mustard' },
+  { id: 'FRM-007', name: 'Amit Patel', score: 38, risk: 'High', district: 'Bareilly', loanAmount: 45000, status: 'Flagged', landSize: '1.2 Acres', crop: 'Wheat' },
+  { id: 'FRM-008', name: 'Geeta Mishra', score: 79, risk: 'Low', district: 'Varanasi', loanAmount: 250000, status: 'Active', landSize: '6.4 Acres', crop: 'Rice' },
+];
+
+export const pendingLoans = [
+  { id: 'LNR-901', farmerId: 'FRM-004', name: 'Priya Sharma', amount: 50000, date: '2025-01-15', score: 45, status: 'In Review' },
+  { id: 'LNR-902', farmerId: 'FRM-102', name: 'Kamal Nath', amount: 120000, date: '2025-01-16', score: 68, status: 'Pending Verification' },
+  { id: 'LNR-903', farmerId: 'FRM-125', name: 'Sita Ram', amount: 85000, date: '2025-01-16', score: 72, status: 'Documents Uploaded' },
+  { id: 'LNR-904', farmerId: 'FRM-088', name: 'Arjun Dev', amount: 210000, date: '2025-01-17', score: 55, status: 'Field Visit Scheduled' },
 ];
 
 export const fraudAlerts = [
@@ -324,6 +331,40 @@ export const consentData = {
   consentRate: 96.1,
 };
 
+// ===== ENTERPRISE BANK DATA =====
+export const bankHQStats = {
+  totalLoanBook: 12450000000, // 1245 Cr
+  npaRatio: 1.84,
+  portfolioGrowth: 15.2,
+  activeBranches: 124,
+  disbursementTarget: 85,
+  regulatoryCompliance: 100,
+  pslTarget: 92,
+  avgYield: 8.4,
+};
+
+export const branchPerformance = [
+  { id: 'BR-01', name: 'Varanasi Central', head: 'A.P. Singh', loans: 450, volume: '₹84 Cr', npa: 1.2, status: 'On Track' },
+  { id: 'BR-02', name: 'Lucknow Main', head: 'R. K. Verma', loans: 380, volume: '₹72 Cr', npa: 2.1, status: 'Review' },
+  { id: 'BR-03', name: 'Allahabad South', head: 'S. Mishra', loans: 520, volume: '₹110 Cr', npa: 1.5, status: 'Excellent' },
+  { id: 'BR-04', name: 'Kanpur Industrial', head: 'M. Bajpai', loans: 290, volume: '₹55 Cr', npa: 3.4, status: 'High Risk' },
+];
+
+export const riskHeatmap = [
+  { state: 'Uttar Pradesh', value: 85, risk: 'Low' },
+  { state: 'Maharashtra', value: 72, risk: 'Low' },
+  { state: 'Madhya Pradesh', value: 45, risk: 'Medium' },
+  { state: 'Rajasthan', value: 38, risk: 'Medium' },
+  { state: 'Bihar', value: 24, risk: 'High' },
+];
+
+export const auditLogs = [
+  { id: 'LOG-001', user: 'System', action: 'Policy Engine Update', timestamp: '2025-01-18 10:24', status: 'Success' },
+  { id: 'LOG-002', user: 'Admin_Amit', action: 'SSO Certificate Renewal', timestamp: '2025-01-18 09:15', status: 'Success' },
+  { id: 'LOG-003', user: 'Risk_User', action: 'Overrode rejection: FRM-772', timestamp: '2025-01-17 14:30', status: 'Flagged' },
+  { id: 'LOG-004', user: 'System', action: 'Daily Core-Banking Sync', timestamp: '2025-01-18 00:05', status: 'Success' },
+];
+
 export const navLinks = {
   farmer: [
     { name: 'Dashboard', path: '/farmer/dashboard', icon: 'LayoutDashboard' },
@@ -338,17 +379,17 @@ export const navLinks = {
   lender: [
     { name: 'Dashboard', path: '/lender/dashboard', icon: 'LayoutDashboard' },
     { name: 'Farmers', path: '/lender/farmers', icon: 'Users' },
-    { name: 'Risk Analysis', path: '/lender/risk', icon: 'Shield' },
-    { name: 'Loan Engine', path: '/lender/loans', icon: 'Calculator' },
-    { name: 'ML Insights', path: '/lender/ml', icon: 'Brain' },
-    { name: 'Fraud Alerts', path: '/lender/fraud', icon: 'AlertTriangle' },
+    { name: 'Loan Decisions', path: '/lender/decisions', icon: 'ClipboardCheck' },
+    { name: 'Portfolio Analytics', path: '/lender/analytics', icon: 'BarChart3' },
+    { name: 'Fraud & Alerts', path: '/lender/fraud', icon: 'AlertTriangle' },
+    { name: 'Settings & Admin', path: '/lender/settings', icon: 'Settings' },
   ],
   admin: [
-    { name: 'Dashboard', path: '/admin/dashboard', icon: 'LayoutDashboard' },
-    { name: 'Users', path: '/admin/users', icon: 'Users' },
-    { name: 'Data Quality', path: '/admin/data', icon: 'Database' },
-    { name: 'Models', path: '/admin/models', icon: 'Brain' },
-    { name: 'Security', path: '/admin/security', icon: 'Lock' },
-    { name: 'Settings', path: '/admin/settings', icon: 'Settings' },
+    { name: 'HQ Overview', path: '/admin/dashboard', icon: 'LayoutDashboard' },
+    { name: 'Branch Performance', path: '/admin/branches', icon: 'Globe' },
+    { name: 'Enterprise Analytics', path: '/admin/analytics', icon: 'BarChart3' },
+    { name: 'Compliance & Audit', path: '/admin/compliance', icon: 'Shield' },
+    { name: 'Policy Engine', path: '/admin/policy', icon: 'Brain' },
+    { name: 'Admin Console', path: '/admin/settings', icon: 'Settings' },
   ],
 };

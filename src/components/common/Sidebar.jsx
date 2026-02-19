@@ -4,14 +4,14 @@ import {
     LayoutDashboard, User, Sprout, Shield, Wallet, CloudSun,
     TrendingUp, ArrowUpCircle, Users, Calculator, Brain,
     AlertTriangle, Database, Lock, Settings, Menu, X,
-    LogOut, ChevronLeft, Bell
+    LogOut, ChevronLeft, Bell, ClipboardCheck, BarChart3, Globe
 } from 'lucide-react';
 import './Sidebar.css';
 
 const iconMap = {
     LayoutDashboard, User, Sprout, Shield, Wallet, CloudSun,
     TrendingUp, ArrowUpCircle, Users, Calculator, Brain,
-    AlertTriangle, Database, Lock, Settings,
+    AlertTriangle, Database, Lock, Settings, ClipboardCheck, BarChart3, Globe
 };
 
 export default function Sidebar({ links, userType, userName }) {
@@ -38,8 +38,8 @@ export default function Sidebar({ links, userType, userName }) {
 
     const typeColors = {
         farmer: { bg: '#D8F3DC', text: '#1B4332', label: 'Farmer Portal' },
-        lender: { bg: '#FFF8E1', text: '#B8860B', label: 'Lender Dashboard' },
-        admin: { bg: '#E8F4FD', text: '#1565C0', label: 'Admin Panel' },
+        lender: { bg: '#FFF8E1', text: '#B8860B', label: 'Lender Admin Panel' },
+        admin: { bg: '#E8F4FD', text: '#1565C0', label: 'Bank Admin Panel' },
     };
 
     const config = typeColors[userType] || typeColors.farmer;

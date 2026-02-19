@@ -9,11 +9,11 @@
 }
 
 .navbar--scrolled {
-    background: rgba(255, 255, 255, 0.92);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
-    padding: 0.6rem 0;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    box-shadow: 0 10px 30px rgba(44, 52, 36, 0.05);
+    padding: 0.8rem 0;
 }
 
 .navbar__container {
@@ -33,15 +33,14 @@
 }
 
 .navbar__logo-icon {
-    width: 42px;
-    height: 42px;
-    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
-    border-radius: var(--radius-md);
+    width: 40px;
+    height: 40px;
+    background: var(--color-moss);
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    box-shadow: 0 4px 12px rgba(45, 106, 79, 0.3);
 }
 
 .navbar__logo-text {
@@ -50,12 +49,13 @@
 }
 
 .navbar__brand {
-    font-family: var(--font-primary);
-    font-weight: 800;
-    font-size: 1.2rem;
-    color: var(--color-primary-dark);
-    letter-spacing: -0.02em;
+    font-family: var(--font-serif);
+    font-weight: 500;
+    font-size: 1.4rem;
+    color: var(--color-moss);
+    letter-spacing: -0.01em;
     line-height: 1.1;
+    font-style: italic;
 }
 
 .navbar__tagline {
@@ -90,13 +90,13 @@
 }
 
 .navbar__link:hover {
-    color: var(--color-primary);
-    background: var(--color-primary-50);
+    color: var(--color-moss);
+    background: var(--color-aloe);
 }
 
 .navbar__link--active {
-    color: var(--color-primary);
-    background: var(--color-primary-50);
+    color: var(--color-moss);
+    background: var(--color-aloe);
 }
 
 .navbar__link--dropdown {
@@ -188,14 +188,15 @@
 }
 
 .navbar__btn--primary {
-    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+    background: var(--color-moss);
     color: white;
-    box-shadow: 0 4px 15px rgba(45, 106, 79, 0.3);
+    box-shadow: 0 8px 20px rgba(44, 52, 36, 0.15);
 }
 
 .navbar__btn--primary:hover {
+    background: var(--color-cypress);
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(45, 106, 79, 0.4);
+    box-shadow: 0 12px 24px rgba(44, 52, 36, 0.2);
 }
 
 .navbar__toggle {

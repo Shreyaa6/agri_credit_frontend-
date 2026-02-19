@@ -1,36 +1,61 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     Users, TrendingUp, AlertTriangle, Shield, DollarSign,
     Search, Filter, Eye, ChevronRight, ArrowUpRight,
     ArrowDownRight, BarChart3, Brain, Activity, Bell,
-    CheckCircle2, XCircle, Clock
+    CheckCircle2, XCircle, Clock, CloudSun, Plus, Download
 } from 'lucide-react';
 import DashboardLayout from '../components/common/DashboardLayout';
 import {
     lenderStats, riskDistribution, farmersList, fraudAlerts,
-    mlInsights, navLinks
+    mlInsights, navLinks, pendingLoans
 } from '../data/mockData';
 import './LenderDashboard.css';
 
+// Animation Variants
 const fadeIn = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
 };
 
 export default function LenderDashboard() {
+    const location = useLocation();
+    const [activeTab, setActiveTab] = useState('Overview');
     const [searchTerm, setSearchTerm] = useState('');
     const [riskFilter, setRiskFilter] = useState('All');
+    const [showDetail, setShowDetail] = useState(false);
+    const [selectedFarmer, setSelectedFarmer] = useState(null);
+
+    // Sync activeTab with route
+    useEffect(() => {
+        const path = location.pathname;
+        const currentLink = navLinks.lender.find(link => path.includes(link.path));
+        if (currentLink) {
+            setActiveTab(currentLink.name);
+        } else {
+            setActiveTab('Dashboard');
+        }
+    }, [location]);
 
     const filteredFarmers = farmersList.filter(f => {
-        const matchSearch = f.name.toLowerCase().includes(searchTerm.toLowerCase()) || f.id.toLowerCase().includes(searchTerm.toLowerCase());
+        const searchLower = searchTerm.toLowerCase();
+        const matchSearch =
+            f.name.toLowerCase().includes(searchLower) ||
+            f.id.toLowerCase().includes(searchLower) ||
+            f.district.toLowerCase().includes(searchLower);
         const matchRisk = riskFilter === 'All' || f.risk === riskFilter;
         return matchSearch && matchRisk;
     });
 
+    const handleViewFarmer = (farmer) => {
+        setSelectedFarmer(farmer);
+        setShowDetail(true);
+    };
+
     return (
-        <DashboardLayout links={navLinks.lender} userType="lender" userName="SBI Varanasi Branch">
+        <DashboardLayout links={navLinks.lender} userType="lender" userName="Amitesh Pratap Singh">
             <div className="lender-dash">
                 {/* Header */}
                 <motion.div
@@ -40,280 +65,751 @@ export default function LenderDashboard() {
                     transition={{ duration: 0.5 }}
                 >
                     <div>
-                        <h1>Lender <span className="text-gradient">Dashboard</span></h1>
-                        <p className="lender-dash__subtitle">SBI — Varanasi Branch · Agricultural Lending Division</p>
+                        <h1>Lender <span className="text-gradient">Admin Panel</span></h1>
+                        <p className="lender-dash__subtitle">SBI Varanasi Branch · Officer: Amitesh Pratap Singh</p>
                     </div>
                     <div className="lender-dash__header-actions">
-                        <button className="lender-dash__notification">
+                        <div className="lender-dash__time">
+                            <Clock size={16} />
+                            <span>Last login: 2 mins ago</span>
+                        </div>
+                        <button className="lender-dash__notification" onClick={() => setActiveTab('Fraud & Alerts')}>
                             <Bell size={20} />
                             <span className="lender-dash__notif-badge">{fraudAlerts.length}</span>
                         </button>
                     </div>
                 </motion.div>
 
-                {/* Key Stats */}
-                <motion.div
-                    className="lender-dash__stats"
-                    initial="hidden"
-                    animate="visible"
-                    variants={{ visible: { transition: { staggerChildren: 0.08 } } }}
-                >
-                    {[
-                        { icon: <Users size={22} />, label: 'Total Farmers', value: lenderStats.totalFarmers.toLocaleString(), color: '#2D6A4F', sub: `+${lenderStats.monthlyGrowth}% this month` },
-                        { icon: <Activity size={22} />, label: 'Active Loans', value: lenderStats.activeLoans.toLocaleString(), color: '#3182CE', sub: `${lenderStats.collectionRate}% collection rate` },
-                        { icon: <DollarSign size={22} />, label: 'Total Disbursed', value: `₹${(lenderStats.totalDisbursed / 10000000).toFixed(1)} Cr`, color: '#D4A017', sub: 'Since inception' },
-                        { icon: <Shield size={22} />, label: 'Avg Score', value: lenderStats.avgScore, color: '#0D9488', sub: `${lenderStats.defaultRate}% default rate` },
-                    ].map((stat, i) => (
-                        <motion.div key={i} className="lender-stat" variants={fadeIn} transition={{ duration: 0.4 }}>
-                            <div className="lender-stat__icon" style={{ background: `linear-gradient(135deg, ${stat.color}, ${stat.color}88)` }}>
-                                {stat.icon}
-                            </div>
-                            <div>
-                                <span className="lender-stat__label">{stat.label}</span>
-                                <span className="lender-stat__value">{stat.value}</span>
-                                <span className="lender-stat__sub">{stat.sub}</span>
-                            </div>
-                        </motion.div>
+                {/* Tab Navigation */}
+                <div className="lender-dash__tabs">
+                    {navLinks.lender.map(link => (
+                        <Link
+                            key={link.path}
+                            to={link.path}
+                            className={`lender-tab ${activeTab === link.name ? 'lender-tab--active' : ''}`}
+                        >
+                            {link.name}
+                        </Link>
                     ))}
-                </motion.div>
-
-                <div className="lender-dash__grid">
-                    {/* Risk Distribution */}
-                    <motion.div
-                        className="dash-card"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
-                    >
-                        <div className="dash-card__header">
-                            <h3>Risk Distribution</h3>
-                            <Link to="/lender/risk" className="dash-card__link">
-                                Analysis <ChevronRight size={14} />
-                            </Link>
-                        </div>
-
-                        <div className="risk-dist">
-                            <div className="risk-dist__bar">
-                                {riskDistribution.map((r, i) => (
-                                    <div
-                                        key={i}
-                                        className="risk-dist__segment"
-                                        style={{ width: `${r.percentage}%`, background: r.color }}
-                                        title={`${r.level}: ${r.percentage}%`}
-                                    />
-                                ))}
-                            </div>
-                            <div className="risk-dist__legend">
-                                {riskDistribution.map((r, i) => (
-                                    <div key={i} className="risk-dist__item">
-                                        <span className="risk-dist__dot" style={{ background: r.color }} />
-                                        <span className="risk-dist__name">{r.level}</span>
-                                        <span className="risk-dist__count">{r.count}</span>
-                                        <span className="risk-dist__pct">({r.percentage}%)</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* NPA Info */}
-                        <div className="npa-info">
-                            <div className="npa-info__item">
-                                <span className="npa-info__label">NPA Ratio</span>
-                                <span className="npa-info__value">{lenderStats.npaRatio}%</span>
-                            </div>
-                            <div className="npa-info__item">
-                                <span className="npa-info__label">Default Rate</span>
-                                <span className="npa-info__value">{lenderStats.defaultRate}%</span>
-                            </div>
-                            <div className="npa-info__item">
-                                <span className="npa-info__label">Collection</span>
-                                <span className="npa-info__value" style={{ color: '#38A169' }}>{lenderStats.collectionRate}%</span>
-                            </div>
-                        </div>
-                    </motion.div>
-
-                    {/* ML Insights */}
-                    <motion.div
-                        className="dash-card"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 }}
-                    >
-                        <div className="dash-card__header">
-                            <h3>ML Model Insights</h3>
-                            <Link to="/lender/ml" className="dash-card__link">
-                                Details <ChevronRight size={14} />
-                            </Link>
-                        </div>
-
-                        <div className="ml-insights">
-                            <div className="ml-insights__confidence">
-                                <div className="ml-insights__conf-circle">
-                                    <svg viewBox="0 0 80 80">
-                                        <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="6" />
-                                        <circle cx="40" cy="40" r="34" fill="none" stroke="#2D6A4F" strokeWidth="6"
-                                            strokeDasharray="214" strokeDashoffset={214 - (214 * mlInsights.confidenceLevel / 100)}
-                                            strokeLinecap="round" transform="rotate(-90 40 40)" />
-                                    </svg>
-                                    <span className="ml-insights__conf-value">{mlInsights.confidenceLevel}%</span>
-                                </div>
-                                <div className="ml-insights__conf-info">
-                                    <span className="ml-insights__conf-label">Model Confidence</span>
-                                    <span className="ml-insights__conf-version">v{mlInsights.modelVersion}</span>
-                                </div>
-                            </div>
-
-                            <h4 className="ml-insights__title">Top Predictive Features</h4>
-                            <div className="ml-insights__features">
-                                {mlInsights.topFeatures.map((f, i) => (
-                                    <div key={i} className="ml-feature">
-                                        <span className="ml-feature__name">{f.name}</span>
-                                        <div className="ml-feature__bar">
-                                            <div
-                                                className="ml-feature__fill"
-                                                style={{
-                                                    width: `${f.importance * 100}%`,
-                                                    background: f.direction === 'positive' ? '#38A169' : f.direction === 'negative' ? '#E53E3E' : '#D69E2E'
-                                                }}
-                                            />
-                                        </div>
-                                        <span className="ml-feature__value">{(f.importance * 100).toFixed(0)}%</span>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <div className="ml-insights__metrics">
-                                {Object.entries(mlInsights.performanceMetrics).map(([key, value]) => (
-                                    <div key={key} className="ml-metric">
-                                        <span className="ml-metric__label">{key.replace(/([A-Z])/g, ' $1').replace('f 1', 'F1')}</span>
-                                        <span className="ml-metric__value">{value}%</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </motion.div>
-
-                    {/* Fraud Alerts */}
-                    <motion.div
-                        className="dash-card dash-card--alerts"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5 }}
-                    >
-                        <div className="dash-card__header">
-                            <h3>⚠️ Fraud Alerts</h3>
-                            <Link to="/lender/fraud" className="dash-card__link">
-                                View All <ChevronRight size={14} />
-                            </Link>
-                        </div>
-
-                        <div className="fraud-alerts">
-                            {fraudAlerts.map((alert, i) => (
-                                <div key={i} className={`fraud-alert fraud-alert--${alert.severity.toLowerCase()}`}>
-                                    <div className="fraud-alert__header">
-                                        <span className="fraud-alert__type">{alert.type}</span>
-                                        <span className={`fraud-alert__severity fraud-alert__severity--${alert.severity.toLowerCase()}`}>
-                                            {alert.severity}
-                                        </span>
-                                    </div>
-                                    <p className="fraud-alert__message">{alert.message}</p>
-                                    <div className="fraud-alert__footer">
-                                        <span className="fraud-alert__farmer">{alert.farmerId}</span>
-                                        <span className="fraud-alert__date">{alert.date}</span>
-                                    </div>
-                                    <div className="fraud-alert__actions">
-                                        <button className="fraud-alert__btn fraud-alert__btn--review">
-                                            <Eye size={14} /> Review
-                                        </button>
-                                        <button className="fraud-alert__btn fraud-alert__btn--dismiss">
-                                            Dismiss
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </motion.div>
-
-                    {/* Farmer Risk Table */}
-                    <motion.div
-                        className="dash-card dash-card--table"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.6 }}
-                        style={{ gridColumn: '1 / -1' }}
-                    >
-                        <div className="dash-card__header">
-                            <h3>Farmer Risk Overview</h3>
-                            <Link to="/lender/farmers" className="dash-card__link">
-                                View All <ChevronRight size={14} />
-                            </Link>
-                        </div>
-
-                        <div className="farmer-table__controls">
-                            <div className="farmer-table__search">
-                                <Search size={16} />
-                                <input
-                                    type="text"
-                                    placeholder="Search farmer by name or ID..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                />
-                            </div>
-                            <div className="farmer-table__filters">
-                                {['All', 'Low', 'Medium', 'High'].map(f => (
-                                    <button
-                                        key={f}
-                                        className={`farmer-table__filter ${riskFilter === f ? 'farmer-table__filter--active' : ''}`}
-                                        onClick={() => setRiskFilter(f)}
-                                    >
-                                        {f}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="farmer-table">
-                            <div className="farmer-table__header">
-                                <span>Farmer ID</span>
-                                <span>Name</span>
-                                <span>Score</span>
-                                <span>Risk</span>
-                                <span>District</span>
-                                <span>Loan Amt</span>
-                                <span>Status</span>
-                                <span>Action</span>
-                            </div>
-                            {filteredFarmers.map((farmer, i) => (
-                                <div key={i} className="farmer-table__row">
-                                    <span className="farmer-table__id">{farmer.id}</span>
-                                    <span className="farmer-table__name">{farmer.name}</span>
-                                    <span className="farmer-table__score">
-                                        <span className={`score-badge score-badge--${farmer.score >= 70 ? 'high' : farmer.score >= 50 ? 'med' : 'low'}`}>
-                                            {farmer.score}
-                                        </span>
-                                    </span>
-                                    <span className={`risk-badge risk-badge--${farmer.risk.toLowerCase()}`}>
-                                        {farmer.risk}
-                                    </span>
-                                    <span>{farmer.district}</span>
-                                    <span>₹{farmer.loanAmount.toLocaleString()}</span>
-                                    <span className={`status-badge status-badge--${farmer.status.toLowerCase()}`}>
-                                        {farmer.status === 'Active' && <CheckCircle2 size={12} />}
-                                        {farmer.status === 'Review' && <Clock size={12} />}
-                                        {farmer.status === 'Flagged' && <AlertTriangle size={12} />}
-                                        {farmer.status}
-                                    </span>
-                                    <span>
-                                        <button className="farmer-table__action">
-                                            <Eye size={14} /> View
-                                        </button>
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    </motion.div>
                 </div>
+
+                <div className="lender-dash__content">
+                    {activeTab === 'Dashboard' && <OverviewSection setActiveTab={setActiveTab} />}
+                    {activeTab === 'Farmers' && (
+                        <FarmersSection
+                            filteredFarmers={filteredFarmers}
+                            searchTerm={searchTerm}
+                            setSearchTerm={setSearchTerm}
+                            riskFilter={riskFilter}
+                            setRiskFilter={setRiskFilter}
+                            onViewDetail={handleViewFarmer}
+                        />
+                    )}
+                    {activeTab === 'Loan Decisions' && <DecisionsSection />}
+                    {activeTab === 'Portfolio Analytics' && <AnalyticsSection />}
+                    {activeTab === 'Fraud & Alerts' && <AlertsSection />}
+                    {activeTab === 'Settings & Admin' && <SettingsSection />}
+                </div>
+
+                {showDetail && selectedFarmer && (
+                    <FarmerDetailModal
+                        farmer={selectedFarmer}
+                        onClose={() => setShowDetail(false)}
+                    />
+                )}
             </div>
         </DashboardLayout>
     );
 }
+
+// ----- SUB-COMPONENTS -----
+
+function OverviewSection({ setActiveTab }) {
+    return (
+        <motion.div initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.1 } } }}>
+            {/* Key Stats */}
+            <div className="lender-dash__stats">
+                {[
+                    { icon: <Users size={22} />, label: 'Total Farmers', value: lenderStats.totalFarmers.toLocaleString(), trend: '+12%', color: '#2D6A4F' },
+                    { icon: <Shield size={22} />, label: 'Avg Trust Score', value: lenderStats.avgScore, trend: '+2.4', color: '#0D9488' },
+                    { icon: <DollarSign size={22} />, label: 'Disbursed AMT', value: `₹${(lenderStats.totalDisbursed / 10000000).toFixed(1)} Cr`, trend: '+₹42L', color: '#D4A017' },
+                    { icon: <Activity size={22} />, label: 'Approval Rate', value: '91.2%', trend: '-0.5%', color: '#3182CE' },
+                ].map((stat, i) => (
+                    <motion.div key={i} className="lender-stat" variants={fadeIn}>
+                        <div className="lender-stat__icon" style={{ background: `linear-gradient(135deg, ${stat.color}, ${stat.color}88)` }}>
+                            {stat.icon}
+                        </div>
+                        <div>
+                            <span className="lender-stat__label">{stat.label}</span>
+                            <span className="lender-stat__value">{stat.value}</span>
+                            <span className={`lender-stat__trend ${stat.trend.startsWith('+') ? 'text-success' : 'text-danger'}`}>
+                                {stat.trend} <span style={{ fontSize: '10px' }}>vs last month</span>
+                            </span>
+                        </div>
+                    </motion.div>
+                ))}
+            </div>
+
+            <div className="lender-dash__grid">
+                <div className="dash-card">
+                    <div className="dash-card__header">
+                        <h3>Risk Distribution</h3>
+                        <Link to="/lender/analytics" className="dash-card__link">
+                            Deep Analysis <ChevronRight size={14} />
+                        </Link>
+                    </div>
+                    <div className="risk-dist">
+                        <div className="risk-dist__bar">
+                            {riskDistribution.map((r, i) => (
+                                <div key={i} className="risk-dist__segment" style={{ width: `${r.percentage}%`, background: r.color }} />
+                            ))}
+                        </div>
+                        <div className="risk-dist__legend-grid">
+                            {riskDistribution.map((r, i) => (
+                                <div key={i} className="risk-dist__item">
+                                    <span className="risk-dist__dot" style={{ background: r.color }} />
+                                    <span className="risk-dist__name">{r.level}</span>
+                                    <span className="risk-dist__pct">{r.percentage}%</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="dash-card">
+                    <div className="dash-card__header">
+                        <h3>Recent Activity</h3>
+                        <Link to="/lender/farmers" className="dash-card__link">
+                            View All <ChevronRight size={14} />
+                        </Link>
+                    </div>
+                    <div className="activity-feed">
+                        {[
+                            { user: 'S. Devi', action: 'KYC Verified', time: '12m ago', icon: <CheckCircle2 size={14} /> },
+                            { user: 'R. Kumar', action: 'Score Updated: 74', time: '45m ago', icon: <TrendingUp size={14} /> },
+                            { user: 'P. Sharma', action: 'Loan Requested', time: '2h ago', icon: <DollarSign size={14} /> },
+                            { user: 'A. Patel', action: 'Flagged: Fraud', time: '4h ago', icon: <AlertTriangle size={14} />, color: '#E53E3E' },
+                        ].map((act, i) => (
+                            <div key={i} className="activity-item">
+                                <div className="activity-item__icon" style={{ color: act.color || '#2D6A4F' }}>{act.icon}</div>
+                                <div className="activity-item__text">
+                                    <strong>{act.user}</strong> {act.action}
+                                    <span>{act.time}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </motion.div>
+    );
+}
+
+function FarmersSection({ filteredFarmers, searchTerm, setSearchTerm, riskFilter, setRiskFilter, onViewDetail }) {
+    return (
+        <motion.div className="dash-card dash-card--table" initial="hidden" animate="visible" variants={fadeIn}>
+            <div className="dash-card__header">
+                <h3>Farmer Directory</h3>
+                <div className="dash-card__actions">
+                    <button className="btn-minimal-posh" onClick={() => alert('Exporting Farmer Portfolio CSV...')}><Download size={14} /> Export CSV</button>
+                    <button className="btn-minimal-posh btn-minimal-posh--primary" onClick={() => alert('Launching "Quick Onboarding" flow...')}><Plus size={14} /> Add Farmer</button>
+                </div>
+            </div>
+
+            <div className="farmer-table__controls">
+                <div className="farmer-table__search">
+                    <Search size={16} />
+                    <input
+                        type="text"
+                        placeholder="Search by name, ID or district..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                <div className="farmer-table__filters">
+                    {['All', 'Low', 'Medium', 'High'].map(f => (
+                        <button
+                            key={f}
+                            className={`farmer-table__filter ${riskFilter === f ? 'farmer-table__filter--active' : ''}`}
+                            onClick={() => setRiskFilter(f)}
+                        >
+                            {f} Risk
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            <div className="farmer-table">
+                <div className="farmer-table__header">
+                    <span>Farmer ID</span>
+                    <span>Name</span>
+                    <span>Score</span>
+                    <span>Risk Band</span>
+                    <span>District</span>
+                    <span>Land Size</span>
+                    <span>Assigned To</span>
+                    <span>Action</span>
+                </div>
+                {filteredFarmers.map((farmer, i) => (
+                    <div key={i} className="farmer-table__row">
+                        <span className="farmer-table__id">{farmer.id}</span>
+                        <span className="farmer-table__name">{farmer.name}</span>
+                        <span>
+                            <span className={`score-badge score-badge--${farmer.score >= 70 ? 'high' : farmer.score >= 50 ? 'med' : 'low'}`}>
+                                {farmer.score}
+                            </span>
+                        </span>
+                        <span>
+                            <span className={`risk-badge risk-badge--${farmer.risk.toLowerCase()}`}>
+                                {farmer.risk}
+                            </span>
+                        </span>
+                        <span>{farmer.district}</span>
+                        <span>{farmer.landSize}</span>
+                        <span>
+                            <select className="officer-select" defaultValue="Unassigned">
+                                <option>Unassigned</option>
+                                <option>A. Singh (RM)</option>
+                                <option>M. Kumar (FO)</option>
+                                <option>S. Devi (BM)</option>
+                            </select>
+                        </span>
+                        <span>
+                            <button className="btn-text" style={{ padding: '0.4rem' }} onClick={() => onViewDetail(farmer)}>
+                                <Eye size={16} />
+                            </button>
+                        </span>
+                    </div>
+                ))}
+            </div>
+        </motion.div>
+    );
+}
+
+function DecisionsSection() {
+    const [decisions, setDecisions] = useState({});
+
+    const handleAction = (id, status) => {
+        setDecisions(prev => ({ ...prev, [id]: status }));
+    };
+
+    return (
+        <motion.div className="dash-card dash-card--table" initial="hidden" animate="visible" variants={fadeIn}>
+            <div className="dash-card__header">
+                <h3>Loan Review Queue</h3>
+                <div className="dash-card__actions">
+                    <button className="btn-minimal-posh" onClick={() => alert('Opening Queue Filters...')}><Filter size={14} /> Filter Queue</button>
+                    <button className="btn-minimal-posh" onClick={() => alert('Exporting Decisions Ledger...')}><Download size={14} /> Export</button>
+                </div>
+            </div>
+
+            <div className="loan-review-list">
+                <div className="farmer-table__header" style={{ gridTemplateColumns: '100px 1.5fr 100px 120px 100px 1.2fr 180px' }}>
+                    <span>Loan ID</span>
+                    <span>Farmer Name</span>
+                    <span>Amount</span>
+                    <span>Request Date</span>
+                    <span>Score</span>
+                    <span>Current Status</span>
+                    <span>Action</span>
+                </div>
+                {pendingLoans.map((loan, i) => (
+                    <div key={i} className="farmer-table__row" style={{ gridTemplateColumns: '100px 1.5fr 100px 120px 100px 1.2fr 180px' }}>
+                        <span className="farmer-table__id">{loan.id}</span>
+                        <span className="farmer-table__name">{loan.name}</span>
+                        <span style={{ fontWeight: 700 }}>₹{loan.amount.toLocaleString()}</span>
+                        <span>{loan.date}</span>
+                        <span>
+                            <span className={`score-badge score-badge--${loan.score >= 70 ? 'high' : loan.score >= 50 ? 'med' : 'low'}`}>
+                                {loan.score}
+                            </span>
+                        </span>
+                        <span>
+                            {decisions[loan.id] ? (
+                                <span className={`status-pill status-pill--${decisions[loan.id].toLowerCase()}`}>
+                                    {decisions[loan.id]}
+                                </span>
+                            ) : (
+                                <span className="status-badge" style={{ color: '#D69E2E' }}>
+                                    <Clock size={12} style={{ marginRight: '4px' }} />
+                                    In Review
+                                </span>
+                            )}
+                        </span>
+                        <span>
+                            {!decisions[loan.id] ? (
+                                <div className="decision-btns-inline">
+                                    <button className="btn-mini btn-mini--success" onClick={() => handleAction(loan.id, 'Approved')}>Approve</button>
+                                    <button className="btn-mini btn-mini--danger" onClick={() => handleAction(loan.id, 'Rejected')}>Reject</button>
+                                </div>
+                            ) : (
+                                <button className="btn-text" style={{ fontSize: '0.75rem', textDecoration: 'underline' }} onClick={() => {
+                                    const next = { ...decisions };
+                                    delete next[loan.id];
+                                    setDecisions(next);
+                                    console.log(`Action for ${loan.id} undone.`);
+                                }}>Undo Action</button>
+                            )}
+                        </span>
+                    </div>
+                ))}
+            </div>
+        </motion.div>
+    );
+}
+
+function AnalyticsSection() {
+    return (
+        <motion.div className="lender-analytics" initial="hidden" animate="visible" variants={fadeIn}>
+            <div className="analytics-grid">
+                <div className="dash-card">
+                    <div className="dash-card__header">
+                        <h3>Portfolio Growth</h3>
+                        <div className="lender-stat__trend text-success">+18.5% YoY</div>
+                    </div>
+                    <div className="analytics-placeholder">
+                        {/* Simulate a bar chart */}
+                        <div className="mini-chart">
+                            {[65, 45, 75, 55, 85, 95, 80].map((h, i) => (
+                                <motion.div
+                                    key={i}
+                                    className="mini-chart__bar"
+                                    initial={{ height: 0 }}
+                                    animate={{ height: `${h}%` }}
+                                    transition={{ delay: i * 0.1 }}
+                                />
+                            ))}
+                        </div>
+                        <div className="mini-chart__labels">
+                            <span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span><span>Jan</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="dash-card">
+                    <div className="dash-card__header">
+                        <h3>NPA Risk Index</h3>
+                        <div className="lender-stat__trend text-danger">-2.1% improvement</div>
+                    </div>
+                    <div className="analytics-placeholder">
+                        <div className="risk-meter">
+                            <div className="risk-meter__arc" />
+                            <motion.div
+                                className="risk-meter__needle"
+                                initial={{ rotate: -90 }}
+                                animate={{ rotate: 15 }}
+                                transition={{ duration: 1.5, type: 'spring' }}
+                            />
+                            <div className="risk-meter__value">3.2%</div>
+                            <div className="risk-meter__label">Regional Avg: 4.8%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="dash-card" style={{ marginTop: '2rem' }}>
+                <h3>District-wise Performance</h3>
+                <div className="district-stats">
+                    {[
+                        { name: 'Varanasi', farmers: 1240, disbursed: '₹4.2 Cr', health: 82 },
+                        { name: 'Allahabad', farmers: 850, disbursed: '₹2.8 Cr', health: 74 },
+                        { name: 'Agra', farmers: 2100, disbursed: '₹7.1 Cr', health: 88 },
+                        { name: 'Lucknow', farmers: 1540, disbursed: '₹5.5 Cr', health: 68 },
+                    ].map((d, i) => (
+                        <div key={i} className="district-row">
+                            <span className="district-name">{d.name}</span>
+                            <span className="district-count">{d.farmers} Farmers</span>
+                            <span className="district-amt">{d.disbursed}</span>
+                            <div className="district-health">
+                                <div className="district-health__bar">
+                                    <div className="district-health__fill" style={{ width: `${d.health}%`, backgroundColor: d.health > 80 ? '#2D6A4F' : d.health > 70 ? '#D69E2E' : '#E53E3E' }} />
+                                </div>
+                                <span>{d.health}%</span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </motion.div>
+    );
+}
+
+function AlertsSection() {
+    const [dismissed, setDismissed] = useState([]);
+
+    const handleDismiss = (id) => {
+        setDismissed(prev => [...prev, id]);
+    };
+
+    const activeAlerts = fraudAlerts.filter(a => !dismissed.includes(a.id));
+
+    return (
+        <motion.div className="lender-alerts" initial="hidden" animate="visible" variants={fadeIn}>
+            <div className="alerts-summary">
+                <div className="dash-card alert-stat--high">
+                    <AlertTriangle size={24} />
+                    <div>
+                        <h4>High Priority</h4>
+                        <span className="alert-count">{activeAlerts.filter(a => a.severity === 'High').length} Pending</span>
+                    </div>
+                </div>
+                <div className="dash-card alert-stat--med">
+                    <Shield size={24} />
+                    <div>
+                        <h4>Security Ops</h4>
+                        <span className="alert-count">{activeAlerts.length} Active Watches</span>
+                    </div>
+                </div>
+            </div>
+
+            <div className="fraud-alerts" style={{ marginTop: '2rem' }}>
+                <AnimatePresence>
+                    {activeAlerts.length > 0 ? activeAlerts.map((alert) => (
+                        <motion.div
+                            key={alert.id}
+                            className={`fraud-alert fraud-alert--${alert.severity.toLowerCase()}`}
+                            initial={{ x: -20, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            exit={{ x: 50, opacity: 0 }}
+                            whileHover={{ x: 10 }}
+                            layout
+                        >
+                            <div className="fraud-alert__header">
+                                <div className="fraud-alert__main">
+                                    <div className="fraud-alert__icon">
+                                        {alert.severity === 'High' ? <AlertTriangle size={18} /> : <Shield size={18} />}
+                                    </div>
+                                    <div>
+                                        <span className="fraud-alert__type">{alert.type}</span>
+                                        <p className="fraud-alert__message">{alert.message}</p>
+                                    </div>
+                                </div>
+                                <span className={`fraud-alert__severity fraud-alert__severity--${alert.severity.toLowerCase()}`}>
+                                    {alert.severity}
+                                </span>
+                            </div>
+                            <div className="fraud-alert__footer">
+                                <div className="fraud-alert__meta">
+                                    <span>Farmer ID: <strong>{alert.farmerId}</strong></span>
+                                    <span className="dot-sep" />
+                                    <span>Detected: <strong>{alert.date}</strong></span>
+                                </div>
+                                <div className="fraud-alert__actions">
+                                    <button className="btn-posh-danger" style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem' }} onClick={() => alert(`Account for ${alert.farmerId} has been temporarily frozen. Protocols initiated.`)}>Freeze Account</button>
+                                    <button className="btn-text text-muted" onClick={() => handleDismiss(alert.id)}>Dismiss</button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )) : (
+                        <div className="empty-state-posh">
+                            <CheckCircle2 size={48} className="text-success" />
+                            <h4>System Secured</h4>
+                            <p>All fraud alerts have been addressed or dismissed.</p>
+                            <button className="btn-outline" onClick={() => setDismissed([])}>Restore History</button>
+                        </div>
+                    )}
+                </AnimatePresence>
+            </div>
+        </motion.div>
+    );
+}
+
+function SettingsSection() {
+    return (
+        <motion.div initial="hidden" animate="visible" variants={fadeIn}>
+            <div className="dash-card">
+                <h3>System Governance & Settings</h3>
+                <p className="text-muted" style={{ marginBottom: '2rem' }}>Manage branch-level configurations and ethical AI guardrails.</p>
+
+                <div className="settings-list">
+                    <div className="settings-item">
+                        <div>
+                            <h4>Dynamic Risk Thresholds</h4>
+                            <p>Current: 45 Minimum Agri-Trust Score for auto-approval</p>
+                        </div>
+                        <button className="btn-minimal-posh" onClick={() => alert('Opening Risk Threshold config...')}>Adjust Limits</button>
+                    </div>
+                    <div className="settings-item">
+                        <div>
+                            <h4>Branch Officer Access</h4>
+                            <p>Manage permissions for 8 dashboard users in Varanasi Branch</p>
+                        </div>
+                        <button className="btn-minimal-posh" onClick={() => alert('Opening Team Management...')}>Manage Team</button>
+                    </div>
+                    <div className="settings-item">
+                        <div>
+                            <h4>Ethical AI Audit Logs</h4>
+                            <p>Download explainability reports for recent automated rejections</p>
+                        </div>
+                        <button className="btn-minimal-posh" onClick={() => alert('Generating AI Explainability PDF...')}>View Logs</button>
+                    </div>
+                </div>
+            </div>
+
+            <div className="dash-card" style={{ marginTop: '2rem' }}>
+                <h3>Platform Notifications</h3>
+                <div className="settings-list">
+                    <div className="settings-item">
+                        <div>
+                            <h4>High-Risk Fraud Alerts</h4>
+                            <p>SMS and Email alerts for immediate review</p>
+                        </div>
+                        <div className="toggle-placeholder" style={{ width: '40px', height: '20px', background: '#2D6A4F', borderRadius: '20px' }} />
+                    </div>
+                    <div className="settings-item">
+                        <div>
+                            <h4>Daily Portfolio Summary</h4>
+                            <p>End-of-day reports on disbursements and collections</p>
+                        </div>
+                        <div className="toggle-placeholder" style={{ width: '40px', height: '20px', background: '#CBD5E0', borderRadius: '20px' }} />
+                    </div>
+                </div>
+            </div>
+        </motion.div>
+    );
+}
+
+function FarmerDetailModal({ farmer, onClose }) {
+    const [localTab, setLocalTab] = useState('Overview');
+
+    return (
+        <motion.div
+            className="modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+        >
+            <motion.div
+                className="modal-container"
+                initial={{ y: 50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+            >
+                <div className="modal-header">
+                    <div>
+                        <h2>{farmer.name} <span className="text-muted">| {farmer.id}</span></h2>
+                        <span className={`risk-badge risk-badge--${farmer.risk.toLowerCase()}`} style={{ marginTop: '4px' }}>
+                            {farmer.risk} Risk Profile
+                        </span>
+                    </div>
+                    <button onClick={onClose} className="modal-close"><XCircle size={28} /></button>
+                </div>
+
+                <div className="modal-tabs">
+                    {['Overview', 'Agri-Trust Score', 'Farm & Crop', 'Risk & Fraud', 'Bank Compliance', 'Documentation'].map(t => (
+                        <button
+                            key={t}
+                            className={`modal-tab ${localTab === t ? 'modal-tab--active' : ''}`}
+                            onClick={() => setLocalTab(t)}
+                        >
+                            {t}
+                        </button>
+                    ))}
+                </div>
+
+                <div className="modal-body">
+                    <div className="detail-grid">
+                        <div className="detail-main">
+                            {localTab === 'Overview' && (
+                                <div className="detail-section">
+                                    <h4 className="section-title">Personal & Land Info</h4>
+                                    <div className="info-grid">
+                                        <div className="info-row"><span>District:</span> <strong>{farmer.district}</strong></div>
+                                        <div className="info-row"><span>Village:</span> <strong>Chandpur Sector-B</strong></div>
+                                        <div className="info-row"><span>Mobile:</span> <strong>+91 98XXX XXX10</strong></div>
+                                        <div className="info-row"><span>Aadhaar:</span> <strong>XXXX-XXXX-7842</strong></div>
+                                        <div className="info-row"><span>Land Size:</span> <strong>4.2 Acres</strong></div>
+                                        <div className="info-row"><span>Ownership:</span> <strong>Self-Owned</strong></div>
+                                    </div>
+
+                                    <h4 className="section-title" style={{ marginTop: '2rem' }}>Recent Harvests</h4>
+                                    <div className="harvest-table">
+                                        <div className="harvest-row header">
+                                            <span>Season</span>
+                                            <span>Crop</span>
+                                            <span>Yield</span>
+                                            <span>Income</span>
+                                        </div>
+                                        <div className="harvest-row">
+                                            <span>Kharif 24</span>
+                                            <span>Rice</span>
+                                            <span>45 Qtl</span>
+                                            <span>₹92,000</span>
+                                        </div>
+                                        <div className="harvest-row">
+                                            <span>Rabi 23-24</span>
+                                            <span>Wheat</span>
+                                            <span>52 Qtl</span>
+                                            <span>₹1.1L</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {localTab === 'Agri-Trust Score' && (
+                                <div className="detail-section">
+                                    <div className="score-summary-box">
+                                        <div className="score-big-circle">
+                                            <span className="score-big-num">{farmer.score}</span>
+                                            <span className="score-big-grade">B+</span>
+                                        </div>
+                                        <div className="score-summary-text">
+                                            <h4>Agri-Trust Score Analysis</h4>
+                                            <p>Score is in Top 15% for the Varanasi region. Improving trend observed over last 3 seasons.</p>
+                                        </div>
+                                    </div>
+
+                                    <h4 className="section-title">Score Components</h4>
+                                    <div className="score-components">
+                                        {[
+                                            { name: 'Repayment History', val: 92, status: 'Excellent' },
+                                            { name: 'Satellite Vegetation Health', val: 78, status: 'Good' },
+                                            { name: 'Weather Resilience', val: 65, status: 'Average' },
+                                            { name: 'Market Price Alignment', val: 84, status: 'Good' },
+                                        ].map((c, i) => (
+                                            <div key={i} className="score-comp">
+                                                <div className="score-comp__label">
+                                                    <span>{c.name}</span>
+                                                    <strong>{c.status}</strong>
+                                                </div>
+                                                <div className="score-comp__bar">
+                                                    <div className="score-comp__fill" style={{ width: `${c.val}%` }} />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {localTab === 'Farm & Crop' && (
+                                <div className="detail-section">
+                                    <div className="satellite-preview">
+                                        <div className="satellite-img">
+                                            <div className="satellite-overlay">
+                                                <span>LIVE NDVI: 0.72</span>
+                                                <div className="pulse-dot" />
+                                            </div>
+                                            <img src="https://images.unsplash.com/photo-1500382017468-9049fee74a62?auto=format&fit=crop&w=800&q=80" alt="Farmland" />
+                                        </div>
+                                        <div className="satellite-info">
+                                            <h4>Satellite Vegetation Index</h4>
+                                            <p>Current NDVI shows healthy crop development consistent with Sowing Date (Nov 05).</p>
+                                            <div className="weather-mini">
+                                                <div className="weather-item">
+                                                    <CloudSun size={18} />
+                                                    <span>24°C / Normal Rain</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <h4 className="section-title">Current Season Details</h4>
+                                    <div className="info-grid">
+                                        <div className="info-row"><span>Crop Type:</span> <strong>Wheat (Kalyan Sona)</strong></div>
+                                        <div className="info-row"><span>Sowing Date:</span> <strong>Nov 05, 2024</strong></div>
+                                        <div className="info-row"><span>Est. Harvest:</span> <strong>Apr 12, 2025</strong></div>
+                                        <div className="info-row"><span>Soil Moisture:</span> <strong className="text-danger">Critical (22%)</strong></div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {localTab === 'Bank Compliance' && (
+                                <div className="detail-section">
+                                    <h4 className="section-title">Institutional Health & Regulatory</h4>
+                                    <div className="compliance-grid">
+                                        <div className="compliance-card">
+                                            <label>CIBIL / Equifax Score</label>
+                                            <div className="comp-val">742 <span className="text-success">Good</span></div>
+                                            <p className="text-muted">Last pulled: Jan 15, 2025</p>
+                                        </div>
+                                        <div className="compliance-card">
+                                            <label>PSL Classification</label>
+                                            <div className="comp-val">Priority Sector</div>
+                                            <p className="text-muted">Category: Agriculture (Small/Marginal)</p>
+                                        </div>
+                                        <div className="compliance-card">
+                                            <label>LGD Projection</label>
+                                            <div className="comp-val">12.4%</div>
+                                            <p className="text-muted">Historical regional recovery average</p>
+                                        </div>
+                                    </div>
+
+                                    <h4 className="section-title" style={{ marginTop: '2rem' }}>e-KYC & Onboarding Logs</h4>
+                                    <div className="kyc-logs">
+                                        <div className="log-item">
+                                            <span>UIDAI Vault Sync</span>
+                                            <span className="badge-success">Verified</span>
+                                            <span className="text-muted">Jan 12</span>
+                                        </div>
+                                        <div className="log-item">
+                                            <span>Pan Proving (NSDL)</span>
+                                            <span className="badge-success">Success</span>
+                                            <span className="text-muted">Jan 12</span>
+                                        </div>
+                                        <div className="log-item">
+                                            <span>Geographic Fencing Check</span>
+                                            <span className="badge-warning">In-Progress</span>
+                                            <span className="text-muted">Now</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {localTab === 'Documentation' && (
+                                <div className="detail-section">
+                                    <div className="docs-list">
+                                        {[
+                                            { name: 'Digital Land Record (Khasra)', date: 'Jan 12, 2025' },
+                                            { name: 'Farmer ID Card', date: 'Jan 10, 2025' },
+                                            { name: 'Mandi Receipt - Kharif 24', date: 'Nov 20, 2024' },
+                                            { name: 'Bank Passbook (6M)', date: 'Jan 15, 2025' },
+                                        ].map((doc, i) => (
+                                            <div key={i} className="doc-item">
+                                                <div className="doc-icon"><Activity size={16} /></div>
+                                                <div className="doc-info">
+                                                    <strong>{doc.name}</strong>
+                                                    <span>Uploaded on {doc.date}</span>
+                                                </div>
+                                                <button className="btn-text">View</button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="detail-loan-center">
+                            <h4 className="section-title">Decision Engine</h4>
+                            <div className="loan-calculator">
+                                <div className="calc-item">
+                                    <label>Recommended Amount</label>
+                                    <div className="calc-value">₹{(farmer.loanAmount * 1.2).toLocaleString()}</div>
+                                </div>
+                                <div className="calc-item">
+                                    <label>Applied Tenure</label>
+                                    <div className="calc-value">12 Months</div>
+                                </div>
+                                <div className="calc-item">
+                                    <label>EMI Calculation</label>
+                                    <div className="calc-value">₹15,400 /mo</div>
+                                </div>
+
+                                <div className="decision-note">
+                                    <label>Reviewer Notes</label>
+                                    <textarea placeholder="Add compliance notes here..." />
+                                </div>
+
+                                <div className="calc-actions">
+                                    <button className="btn-posh-success" onClick={() => { alert('Application Sanctioned successfully.'); onClose(); }}>Approve Loan</button>
+                                    <button className="btn-posh-danger" onClick={() => { alert('Application sent for manual rejection review.'); onClose(); }}>Decline</button>
+                                </div>
+                                <button className="btn-posh-outline" onClick={() => alert('Field visit scheduled for tomorrow 10:00 AM.')}>Request Field Audit</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </motion.div>
+        </motion.div>
+    );
+}
+
+
+

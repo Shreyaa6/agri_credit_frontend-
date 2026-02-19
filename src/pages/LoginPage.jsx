@@ -1,22 +1,46 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Sprout, Phone, Lock, ArrowRight, Users, Shield, Eye, EyeOff } from 'lucide-react';
-import Navbar from '../components/common/Navbar';
-import Footer from '../components/common/Footer';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Phone, Lock, ArrowLeft, Users, Building, Eye, EyeOff } from 'lucide-react';
+import logo from '../assets/logo.png';
 import './LoginPage.css';
 
 import { supabase } from '../lib/supabase';
 
+const premiumTransition = {
+    duration: 1.4,
+    ease: [0.16, 1, 0.3, 1]
+};
+
+const fadeInUp = {
+    initial: { opacity: 0, y: 40 },
+    animate: { opacity: 1, y: 0 },
+    transition: premiumTransition
+};
+
+const staggerContainer = {
+    animate: {
+        transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.2
+        }
+    }
+};
+
 export default function LoginPage() {
-    const [userType, setUserType] = useState('farmer');
+    const [userType, setUserType] = useState('lender');
     const [phone, setPhone] = useState('');
     const [otp, setOtp] = useState('');
+    const [bankCode, setBankCode] = useState('');
+    const [bankNumber, setBankNumber] = useState('');
     const [otpSent, setOtpSent] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
+
+    // Smooth reveal for brand title
+    const brandText = "Agri Credit";
 
     const handleSendOtp = async (e) => {
         e.preventDefault();
@@ -24,17 +48,9 @@ export default function LoginPage() {
         setError(null);
 
         try {
-            if (userType === 'farmer') {
-                // Supabase Phone Auth
-                const { error } = await supabase.auth.signInWithOtp({
-                    phone: phone.startsWith('+') ? phone : `+91${phone}`,
-                });
-                if (error) throw error;
-                setOtpSent(true);
-            } else {
-                // Email/Password for Lender/Admin
-                setOtpSent(true); // Proceed to password field
-            }
+            // Simulated delay for premium feel
+            await new Promise(resolve => setTimeout(resolve, 800));
+            setOtpSent(true);
         } catch (err) {
             setError(err.message);
         } finally {
@@ -48,23 +64,11 @@ export default function LoginPage() {
         setError(null);
 
         try {
-            if (userType === 'farmer') {
-                const { error } = await supabase.auth.verifyOtp({
-                    phone: phone.startsWith('+') ? phone : `+91${phone}`,
-                    token: otp,
-                    type: 'sms'
-                });
-                if (error) throw error;
-                navigate('/farmer/dashboard');
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            if (userType === 'lender') {
+                navigate('/lender/dashboard');
             } else {
-                const { error } = await supabase.auth.signInWithPassword({
-                    email: phone, // Assuming user/email is entered in the same field
-                    password: otp,
-                });
-                if (error) throw error;
-
-                if (userType === 'lender') navigate('/lender/dashboard');
-                else navigate('/admin/dashboard');
+                navigate('/admin/dashboard');
             }
         } catch (err) {
             setError(err.message);
@@ -73,133 +77,196 @@ export default function LoginPage() {
         }
     };
 
-
     return (
         <div className="login-wrapper">
-            <Navbar />
             <div className="login-page">
-                <div className="login-page__bg">
-                    <div className="login-page__gradient" />
-                    <div className="login-page__pattern" />
-                </div>
+                <div className="login-page__bg" />
+                <div className="login-page__overlay" />
 
                 <motion.div
-                    className="login-card"
-                    initial={{ opacity: 0, y: 30, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{ duration: 0.6, ease: 'easeOut' }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ ...premiumTransition, delay: 0.6 }}
                 >
-                    <Link to="/" className="login-card__logo">
-                        <div className="login-card__logo-icon">
-                            <Sprout size={24} />
-                        </div>
-                        <div>
-                            <span className="login-card__brand">AgriCredit</span>
-                            <span className="login-card__tagline">Intelligence Platform</span>
-                        </div>
+                    <Link to="/" className="login-page__back-btn">
+                        <ArrowLeft size={18} />
+                        <span>Home</span>
                     </Link>
+                </motion.div>
 
-                    <h2 className="login-card__title">Welcome Back</h2>
-                    <p className="login-card__desc">Sign in to access your dashboard</p>
+                <div className="login-page__content">
+                    <motion.div
+                        className="login-page__brand-wrap"
+                        initial="initial"
+                        animate="animate"
+                        variants={staggerContainer}
+                    >
+                        <motion.h1 className="login-page__title-brand">
+                            {brandText.split("").map((char, i) => (
+                                <motion.span
+                                    key={i}
+                                    style={{ display: 'inline-block', whiteSpace: char === " " ? "pre" : "normal" }}
+                                    variants={{
+                                        initial: { opacity: 0, y: 100, rotateX: -90, filter: 'blur(10px)' },
+                                        animate: { opacity: 1, y: 0, rotateX: 0, filter: 'blur(0px)' }
+                                    }}
+                                    transition={{ ...premiumTransition, delay: i * 0.04 }}
+                                >
+                                    {char}
+                                </motion.span>
+                            ))}
+                        </motion.h1>
+                    </motion.div>
 
-                    {error && (
+                    <motion.div
+                        className="login-card"
+                        initial={{ opacity: 0, y: 60, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        transition={{ ...premiumTransition, delay: 0.4 }}
+                    >
                         <motion.div
-                            className="login-card__error"
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            style={{
-                                color: '#E53E3E',
-                                backgroundColor: '#FED7D7',
-                                padding: '0.75rem',
-                                borderRadius: 'var(--radius-md)',
-                                fontSize: '0.85rem',
-                                marginBottom: '1rem',
-                                border: '1px solid #FEB2B2'
-                            }}
+                            className="login-card__logo-wrap"
+                            variants={fadeInUp}
                         >
-                            {error}
+                            <img src={logo} alt="Logo" className="login-card__logo-img" />
                         </motion.div>
-                    )}
 
-                    {/* User Type Selector */}
-                    <div className="login-card__type-selector">
-                        {[
-                            { value: 'farmer', label: 'Farmer', icon: <Sprout size={16} /> },
-                            { value: 'lender', label: 'Lender', icon: <Users size={16} /> },
-                            { value: 'admin', label: 'Admin', icon: <Shield size={16} /> },
-                        ].map(t => (
-                            <button
-                                key={t.value}
-                                className={`login-card__type-btn ${userType === t.value ? 'login-card__type-btn--active' : ''}`}
-                                onClick={() => setUserType(t.value)}
-                                disabled={loading}
-                            >
-                                {t.icon} {t.label}
-                            </button>
-                        ))}
-                    </div>
+                        <AnimatePresence mode="wait">
+                            {error && (
+                                <motion.div
+                                    className="login-card__error-simple"
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                >
+                                    {error}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
 
-                    <form onSubmit={otpSent ? handleLogin : handleSendOtp} className="login-card__form">
-                        <div className="login-card__field">
-                            <label>
-                                <Phone size={16} />
-                                {userType === 'farmer' ? 'Mobile Number' : 'Email / Username'}
-                            </label>
-                            <input
-                                type={userType === 'farmer' ? 'tel' : 'text'}
-                                placeholder={userType === 'farmer' ? '+91 98765 43210' : 'email@bank.com'}
-                                value={phone}
-                                onChange={(e) => setPhone(e.target.value)}
-                                required
-                                disabled={loading}
-                            />
+                        <div className="login-card__type-tabs">
+                            {['lender', 'bank'].map((t, idx) => (
+                                <button
+                                    key={t}
+                                    className={`login-card__tab ${userType === t ? 'login-card__tab--active' : ''}`}
+                                    onClick={() => {
+                                        setUserType(t);
+                                        setOtpSent(false);
+                                        setError(null);
+                                    }}
+                                >
+                                    {t === 'lender' ? <Users size={16} /> : <Building size={16} />}
+                                    <span style={{ textTransform: 'capitalize' }}>{t}</span>
+                                </button>
+                            ))}
                         </div>
 
-                        {otpSent && (
-                            <motion.div
-                                className="login-card__field"
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
+                        <form onSubmit={userType === 'bank' ? handleLogin : (otpSent ? handleLogin : handleSendOtp)} className="login-card__glass-form">
+                            <AnimatePresence mode="wait">
+                                {userType === 'lender' ? (
+                                    <motion.div
+                                        key="lender-fields"
+                                        initial={{ opacity: 0, x: 10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -10 }}
+                                        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                                        className="login-card__form-fields"
+                                    >
+                                        <div className="login-card__input-group">
+                                            <input
+                                                type="tel"
+                                                placeholder="Phone Number"
+                                                value={phone}
+                                                onChange={(e) => setPhone(e.target.value)}
+                                                required
+                                                className="login-card__glass-input"
+                                            />
+                                        </div>
+
+                                        <AnimatePresence>
+                                            {otpSent && (
+                                                <motion.div
+                                                    className="login-card__input-group"
+                                                    style={{ marginTop: '1.5rem' }}
+                                                    initial={{ opacity: 0, height: 0 }}
+                                                    animate={{ opacity: 1, height: 'auto' }}
+                                                    transition={premiumTransition}
+                                                >
+                                                    <input
+                                                        type={showPassword ? 'text' : 'password'}
+                                                        placeholder="OTP"
+                                                        value={otp}
+                                                        onChange={(e) => setOtp(e.target.value)}
+                                                        required
+                                                        className="login-card__glass-input"
+                                                    />
+                                                    <button type="button" className="login-card__glass-eye" onClick={() => setShowPassword(!showPassword)}>
+                                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                                    </button>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </motion.div>
+                                ) : (
+                                    <motion.div
+                                        key="bank-fields"
+                                        initial={{ opacity: 0, x: 10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -10 }}
+                                        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                                        className="login-card__form-fields"
+                                    >
+                                        <div className="login-card__input-group">
+                                            <input
+                                                type="text"
+                                                placeholder="Bank Code"
+                                                value={bankCode}
+                                                onChange={(e) => setBankCode(e.target.value)}
+                                                required
+                                                className="login-card__glass-input"
+                                            />
+                                        </div>
+                                        <div className="login-card__input-group" style={{ marginTop: '1.5rem' }}>
+                                            <input
+                                                type="text"
+                                                placeholder="Account Number"
+                                                value={bankNumber}
+                                                onChange={(e) => setBankNumber(e.target.value)}
+                                                required
+                                                className="login-card__glass-input"
+                                            />
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
+                            <motion.button
+                                type="submit"
+                                className="login-card__glass-submit"
+                                disabled={loading}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
                             >
-                                <label>
-                                    <Lock size={16} />
-                                    {userType === 'farmer' ? 'OTP' : 'Password'}
-                                </label>
-                                <div className="login-card__password-wrap">
-                                    <input
-                                        type={showPassword ? 'text' : 'password'}
-                                        placeholder={userType === 'farmer' ? '6-digit OTP' : 'Enter password'}
-                                        value={otp}
-                                        onChange={(e) => setOtp(e.target.value)}
-                                        required
-                                        disabled={loading}
-                                    />
-                                    <button type="button" className="login-card__eye" onClick={() => setShowPassword(!showPassword)} disabled={loading}>
-                                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                                    </button>
-                                </div>
-                            </motion.div>
-                        )}
+                                {loading ? (
+                                    <motion.span
+                                        animate={{ opacity: [0.4, 1, 0.4] }}
+                                        transition={{ repeat: Infinity, duration: 1 }}
+                                    >
+                                        Processing...
+                                    </motion.span>
+                                ) : (userType === 'bank' ? 'Enter Dashboard' : (otpSent ? 'Enter Dashboard' : 'Send OTP'))}
+                            </motion.button>
+                        </form>
 
-                        <button type="submit" className="login-card__submit" disabled={loading}>
-                            {loading ? 'Processing...' : (otpSent ? 'Sign In' : (userType === 'farmer' ? 'Send OTP' : 'Continue'))}
-                            {!loading && <ArrowRight size={18} />}
-                        </button>
-                    </form>
-
-                    {userType === 'farmer' && !otpSent && (
-                        <p className="login-card__new-user">
-                            First time? <Link to="/farmer/dashboard">Register as new farmer →</Link>
-                        </p>
-                    )}
-
-                    <div className="login-card__footer">
-                        <p>By signing in, you agree to our <a href="#">Privacy Policy</a> & <a href="#">Terms</a></p>
-                        <p className="login-card__consent">🔒 Your data is encrypted and handled with explicit consent</p>
-                    </div>
-                </motion.div>
+                        <motion.div
+                            className="login-card__glass-footer"
+                            variants={fadeInUp}
+                        >
+                            <span>Enterprise access only. All sessions recorded.</span>
+                        </motion.div>
+                    </motion.div>
+                </div>
             </div>
-            <Footer />
         </div>
     );
 }

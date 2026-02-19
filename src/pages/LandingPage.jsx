@@ -11,15 +11,58 @@ import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
 import './LandingPage.css';
 
+const premiumEase = [0.16, 1, 0.3, 1];
+
 const fadeInUp = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0 },
+    hidden: { opacity: 0, y: 40, filter: 'blur(10px)' },
+    visible: {
+        opacity: 1,
+        y: 0,
+        filter: 'blur(0px)',
+        transition: { duration: 1.2, ease: premiumEase }
+    },
 };
 
 const staggerContainer = {
     hidden: {},
     visible: { transition: { staggerChildren: 0.1 } },
 };
+
+function TextReveal({ text, className, delay = 0 }) {
+    const ref = useRef(null);
+    const isInView = useInView(ref, { once: true, margin: '-100px' });
+
+    return (
+        <motion.span
+            ref={ref}
+            className={className}
+            initial="hidden"
+            animate={isInView ? 'visible' : 'hidden'}
+            variants={{
+                hidden: {},
+                visible: {
+                    transition: { staggerChildren: 0.03, delayChildren: delay }
+                }
+            }}
+        >
+            {text.split("").map((char, i) => (char === " " ? (
+                <span key={i}>&nbsp;</span>
+            ) : (
+                <motion.span
+                    key={i}
+                    style={{ display: 'inline-block' }}
+                    variants={{
+                        hidden: { opacity: 0, y: 20, filter: 'blur(5px)' },
+                        visible: { opacity: 1, y: 0, filter: 'blur(0px)' }
+                    }}
+                    transition={{ duration: 0.8, ease: premiumEase }}
+                >
+                    {char}
+                </motion.span>
+            )))}
+        </motion.span>
+    );
+}
 
 function AnimatedSection({ children, className }) {
     const ref = useRef(null);
@@ -152,14 +195,14 @@ const stakeholders = [
         title: 'For Lenders',
         desc: 'Risk dashboards, ML insights, fraud alerts, and custom risk thresholds.',
         link: '/lender/dashboard',
-        color: '#D4A017',
+        color: '#4C583E',
     },
     {
         icon: <Zap size={32} />,
         title: 'For Admins',
         desc: 'Platform governance, data quality monitoring, policy engine, and system health.',
         link: '/admin/dashboard',
-        color: '#3182CE',
+        color: '#2C3424',
     },
 ];
 
@@ -193,8 +236,10 @@ export default function LandingPage() {
                         </div>
 
                         <h1 className="hero__title">
-                            Empowering Rural India <br />
-                            with <span className="text-gradient">Smart Credit</span> Intelligence
+                            <TextReveal text="Empowering Rural India" /> <br />
+                            <span className="text-gradient">
+                                <TextReveal text="with Smart Credit Intelligence" delay={0.4} />
+                            </span>
                         </h1>
 
                         <p className="hero__subtitle">
@@ -232,58 +277,121 @@ export default function LandingPage() {
                                 <span className="hero__preview-title">Agri-Trust Score Dashboard</span>
                             </div>
                             <div className="hero__preview-body">
-                                <div className="hero__score-card">
-                                    <div className="hero__score-circle">
-                                        <svg viewBox="0 0 100 100">
-                                            <circle cx="50" cy="50" r="42" fill="none" stroke="#e2e8f0" strokeWidth="8" />
-                                            <circle cx="50" cy="50" r="42" fill="none" stroke="url(#scoreGradient)" strokeWidth="8"
-                                                strokeDasharray="264" strokeDashoffset="68" strokeLinecap="round"
-                                                transform="rotate(-90 50 50)" />
-                                            <defs>
-                                                <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                                    <stop offset="0%" stopColor="#2D6A4F" />
-                                                    <stop offset="100%" stopColor="#D4A017" />
-                                                </linearGradient>
-                                            </defs>
-                                        </svg>
-                                        <div className="hero__score-value">
-                                            <span className="hero__score-num">74</span>
-                                            <span className="hero__score-grade">B+</span>
+                                <div className="hero__preview-scroll-content">
+                                    <div className="hero__score-card">
+                                        <div className="hero__score-circle">
+                                            <svg viewBox="0 0 100 100">
+                                                <circle cx="50" cy="50" r="42" fill="none" stroke="#e2e8f0" strokeWidth="8" />
+                                                <circle cx="50" cy="50" r="42" fill="none" stroke="url(#scoreGradient)" strokeWidth="8"
+                                                    strokeDasharray="264" strokeDashoffset="68" strokeLinecap="round"
+                                                    transform="rotate(-90 50 50)" />
+                                                <defs>
+                                                    <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                        <stop offset="0%" stopColor="#2D6A4F" />
+                                                        <stop offset="100%" stopColor="#D4A017" />
+                                                    </linearGradient>
+                                                </defs>
+                                            </svg>
+                                            <div className="hero__score-value">
+                                                <span className="hero__score-num">74</span>
+                                                <span className="hero__score-grade">B+</span>
+                                            </div>
+                                        </div>
+                                        <div className="hero__score-info">
+                                            <span className="hero__score-label">Rajesh Kumar</span>
+                                            <span className="hero__score-risk" style={{ color: '#2C3424' }}>● Low-Medium Risk</span>
+                                            <span className="hero__score-loc">Varanasi, UP · F-8821</span>
                                         </div>
                                     </div>
-                                    <div className="hero__score-info">
-                                        <span className="hero__score-label">Rajesh Kumar</span>
-                                        <span className="hero__score-risk" style={{ color: '#38A169' }}>● Low-Medium Risk</span>
-                                    </div>
-                                </div>
 
-                                <div className="hero__preview-metrics">
-                                    <div className="hero__metric">
-                                        <span className="hero__metric-label">Crop Health</span>
-                                        <div className="hero__metric-bar">
-                                            <div className="hero__metric-fill" style={{ width: '72%', background: '#38A169' }} />
+                                    <div className="hero__preview-metrics">
+                                        <div className="hero__preview-label">Predictive Score Components</div>
+                                        <div className="hero__metric">
+                                            <span className="hero__metric-label">Crop Health</span>
+                                            <div className="hero__metric-bar">
+                                                <div className="hero__metric-fill" style={{ width: '72%', background: '#38A169' }} />
+                                            </div>
+                                            <span className="hero__metric-value">Good</span>
                                         </div>
-                                        <span className="hero__metric-value">Good</span>
-                                    </div>
-                                    <div className="hero__metric">
-                                        <span className="hero__metric-label">Rainfall</span>
-                                        <div className="hero__metric-bar">
-                                            <div className="hero__metric-fill" style={{ width: '58%', background: '#D69E2E' }} />
+                                        <div className="hero__metric">
+                                            <span className="hero__metric-label">Rainfall</span>
+                                            <div className="hero__metric-bar">
+                                                <div className="hero__metric-fill" style={{ width: '58%', background: '#D69E2E' }} />
+                                            </div>
+                                            <span className="hero__metric-value">-9.3%</span>
                                         </div>
-                                        <span className="hero__metric-value">-9.3%</span>
-                                    </div>
-                                    <div className="hero__metric">
-                                        <span className="hero__metric-label">Repayment</span>
-                                        <div className="hero__metric-bar">
-                                            <div className="hero__metric-fill" style={{ width: '85%', background: '#2D6A4F' }} />
+                                        <div className="hero__metric">
+                                            <span className="hero__metric-label">Repayment</span>
+                                            <div className="hero__metric-bar">
+                                                <div className="hero__metric-fill" style={{ width: '85%', background: '#2D6A4F' }} />
+                                            </div>
+                                            <span className="hero__metric-value">Excellent</span>
                                         </div>
-                                        <span className="hero__metric-value">Excellent</span>
+                                        <div className="hero__metric">
+                                            <span className="hero__metric-label">Land Size</span>
+                                            <div className="hero__metric-bar">
+                                                <div className="hero__metric-fill" style={{ width: '90%', background: '#2D6A4F' }} />
+                                            </div>
+                                            <span className="hero__metric-value">High</span>
+                                        </div>
+                                        <div className="hero__metric">
+                                            <span className="hero__metric-label">Soil Quality</span>
+                                            <div className="hero__metric-bar">
+                                                <div className="hero__metric-fill" style={{ width: '65%', background: '#38A169' }} />
+                                            </div>
+                                            <span className="hero__metric-value">Rich</span>
+                                        </div>
+                                        <div className="hero__metric">
+                                            <span className="hero__metric-label">Market Trend</span>
+                                            <div className="hero__metric-bar">
+                                                <div className="hero__metric-fill" style={{ width: '45%', background: '#D69E2E' }} />
+                                            </div>
+                                            <span className="hero__metric-value">Stable</span>
+                                        </div>
+                                        <div className="hero__metric">
+                                            <span className="hero__metric-label">Soil Moisture</span>
+                                            <div className="hero__metric-bar">
+                                                <div className="hero__metric-fill" style={{ width: '30%', background: '#E53E3E' }} />
+                                            </div>
+                                            <span className="hero__metric-value">Critical</span>
+                                        </div>
+                                        <div className="hero__metric">
+                                            <span className="hero__metric-label">Loan History</span>
+                                            <div className="hero__metric-bar">
+                                                <div className="hero__metric-fill" style={{ width: '100%', background: '#38A169' }} />
+                                            </div>
+                                            <span className="hero__metric-value">Perfect</span>
+                                        </div>
+                                        <div className="hero__metric">
+                                            <span className="hero__metric-label">Satellite ID</span>
+                                            <div className="hero__metric-bar">
+                                                <div className="hero__metric-fill" style={{ width: '100%', background: '#3182CE' }} />
+                                            </div>
+                                            <span className="hero__metric-value">SNTL-2B</span>
+                                        </div>
+                                        <div className="hero__metric">
+                                            <span className="hero__metric-label">Region Rank</span>
+                                            <div className="hero__metric-bar">
+                                                <div className="hero__metric-fill" style={{ width: '92%', background: '#38A169' }} />
+                                            </div>
+                                            <span className="hero__metric-value">#12/1.2K</span>
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div className="hero__preview-alert">
-                                    <CloudSun size={16} />
-                                    <span>⚠️ Light frost expected in 48 hrs</span>
+                                    <div className="hero__preview-insight">
+                                        <div className="hero__preview-label">AI Logic Explanation</div>
+                                        <p>Score boosted by consistent repayment over 3 seasons and positive NDVI satellite index indicating healthy vegetation.</p>
+                                    </div>
+
+                                    <div className="hero__preview-alert">
+                                        <CloudSun size={16} />
+                                        <span>⚠️ Heavy rainfall alert for next week</span>
+                                    </div>
+
+                                    <div className="hero__preview-footer">
+                                        <span>Last Sync: Just now</span>
+                                        <span>Model v3.2.1</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -318,7 +426,7 @@ export default function LandingPage() {
                         <motion.div className="section-header" variants={fadeInUp} transition={{ duration: 0.5 }}>
                             <span className="section-header__badge">Platform Features</span>
                             <h2 className="section-header__title">
-                                Built for India&apos;s <span className="text-gradient">Agricultural</span> Future
+                                <TextReveal text="Built for India's Agricultural Future" />
                             </h2>
                             <p className="section-header__desc">
                                 A comprehensive platform addressing every aspect of agricultural credit — from
@@ -355,7 +463,7 @@ export default function LandingPage() {
                         <motion.div className="section-header" variants={fadeInUp} transition={{ duration: 0.5 }}>
                             <span className="section-header__badge">How It Works</span>
                             <h2 className="section-header__title">
-                                From Registration to <span className="text-gradient">Fair Credit</span>
+                                <TextReveal text="From Registration to Fair Credit" />
                             </h2>
                             <p className="section-header__desc">
                                 A simple 4-step journey that transforms agricultural data into fair, explainable credit decisions.
@@ -389,7 +497,7 @@ export default function LandingPage() {
                         <motion.div className="ethics__text" variants={fadeInUp} transition={{ duration: 0.5 }}>
                             <span className="section-header__badge">Ethical AI Framework</span>
                             <h2 className="section-header__title">
-                                Technology with <span className="text-gradient">Conscience</span>
+                                <TextReveal text="Technology with Conscience" />
                             </h2>
                             <p className="ethics__desc">
                                 Our platform is built on the principle that technology should empower, not punish.

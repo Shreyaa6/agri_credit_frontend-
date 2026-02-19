@@ -13,6 +13,7 @@ import {
     farmerProfile, agriTrustScore, currentCrops, weatherData,
     loanEligibility, marketPrices, satelliteData, navLinks
 } from '../data/mockData';
+import API_BASE_URL from '../lib/api';
 import './FarmerDashboard.css';
 
 const fadeIn = {
@@ -29,7 +30,7 @@ export default function FarmerDashboard() {
     useEffect(() => {
         const loadData = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/farmers');
+                const response = await axios.get(`${API_BASE_URL}/api/farmers`);
                 if (response.data && response.data.length > 0) {
                     const data = response.data[0];
                     setProfile(prev => ({

@@ -7,32 +7,31 @@
 .dashboard-layout {
     display: flex;
     flex: 1;
-    padding-top: 80px;
-    /* Navbar height */
+    /* Removed padding-top since navbar is hidden in dashboard */
 }
 
 .dashboard-layout__main {
     flex: 1;
     margin-left: 260px;
-    padding: 2rem;
+    padding: 2.5rem;
     background: var(--color-bg);
-    min-height: calc(100vh - 80px);
+    min-height: 100vh;
     transition: margin-left var(--transition-normal);
 }
 
 .sidebar {
-    top: 80px !important;
-    height: calc(100vh - 80px) !important;
+    top: 0 !important;
+    height: 100vh !important;
 }
 
 @media (max-width: 768px) {
     .dashboard-layout {
-        padding-top: 70px;
+        padding-top: 0;
     }
 
     .dashboard-layout__main {
         margin-left: 0;
-        padding: 1rem;
+        padding: 1.5rem;
     }
 
     .sidebar {

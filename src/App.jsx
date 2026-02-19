@@ -49,17 +49,17 @@ function App() {
         {/* Lender Routes */}
         <Route path="/lender/dashboard" element={<LenderDashboard />} />
         <Route path="/lender/farmers" element={<LenderDashboard />} />
-        <Route path="/lender/risk" element={<LenderDashboard />} />
-        <Route path="/lender/loans" element={<LenderDashboard />} />
-        <Route path="/lender/ml" element={<LenderDashboard />} />
+        <Route path="/lender/decisions" element={<LenderDashboard />} />
+        <Route path="/lender/analytics" element={<LenderDashboard />} />
         <Route path="/lender/fraud" element={<LenderDashboard />} />
+        <Route path="/lender/settings" element={<LenderDashboard />} />
 
         {/* Admin Routes */}
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/admin/users" element={<AdminDashboard />} />
-        <Route path="/admin/data" element={<AdminDashboard />} />
-        <Route path="/admin/models" element={<AdminDashboard />} />
-        <Route path="/admin/security" element={<AdminDashboard />} />
+        <Route path="/admin/branches" element={<AdminDashboard />} />
+        <Route path="/admin/analytics" element={<AdminDashboard />} />
+        <Route path="/admin/compliance" element={<AdminDashboard />} />
+        <Route path="/admin/policy" element={<AdminDashboard />} />
         <Route path="/admin/settings" element={<AdminDashboard />} />
 
         {/* Catch all */}
